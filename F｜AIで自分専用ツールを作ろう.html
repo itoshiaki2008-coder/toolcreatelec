@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>F｜AIで自分専用ツールを作ろう</title>
+<style>
+:root{--bg1:#0b1624;--bg2:#152538;--card:rgba(20,36,56,.78);--bd:rgba(90,160,220,.28);--tx:#e6eef7;--sub:#93a8bf;--ac:#38bdf8;--ac2:#2dd4bf;--warn:#fbbf24;--code:#0a1320;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]){--bg1:#eef4fa;--bg2:#dfeaf5;--card:#fff;--bd:#b8cde2;--tx:#12263a;--sub:#4b647c;--ac:#0369a1;--ac2:#0f766e;--warn:#b45309;--code:#eaf1f8}}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:linear-gradient(160deg,var(--bg1),var(--bg2)) fixed;color:var(--tx);font:15px/1.75 "Hiragino Sans","Noto Sans JP",system-ui,sans-serif}
+main{max-width:520px;margin:0 auto;padding:18px 14px 48px}
+.tag{font:12px "Share Tech Mono",ui-monospace,monospace;color:var(--ac2);letter-spacing:.12em}
+h1{font-size:22px;line-height:1.4;margin:4px 0 8px}
+h2{font-size:16px;margin:0 0 8px;color:var(--ac)}
+.lead{color:var(--sub);font-size:14px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:14px 15px;margin:14px 0}
+.num{font:13px ui-monospace,monospace;color:var(--ac2)}
+ul,ol{margin:6px 0;padding-left:1.3em}
+li{margin:3px 0}
+pre{background:var(--code);border:1px solid var(--bd);border-radius:10px;padding:10px 12px;margin:8px 0;font:12.5px/1.65 ui-monospace,monospace;white-space:pre-wrap;word-break:break-all;overflow-x:auto}
+code{background:var(--code);padding:1px 5px;border-radius:5px;font-size:13px}
+.note{border-left:3px solid var(--warn);padding:4px 10px;margin:8px 0;font-size:13.5px}
+svg{width:100%;height:auto;display:block;margin:8px 0}
+svg text{fill:var(--tx);font-family:"Hiragino Sans","Noto Sans JP",sans-serif}
+.b{fill:var(--code);stroke:var(--ac);stroke-width:1.2}
+.b2{fill:var(--code);stroke:var(--ac2);stroke-width:1.2}
+.ar{stroke:var(--sub);stroke-width:1.5;fill:none}
+.s{fill:var(--sub)!important;font-size:11px}
+</style>
+</head>
+<body>
+<main>
+<div class="tag">GROUP F ／ STAFF ONLY</div>
+<h1>AIで、自分専用の道具を作ろう</h1>
+<p class="lead">若年検査員向けレクチャー。仕事にも趣味にも、AIを使わないのはもったいない。自分専用の便利なサイトを作ることが、そのままスキルアップになる。例題は「主機適正出力シミュレーター（boat-simulator）」。</p>
+
+<section class="card">
+<div class="num">01</div><h2>なぜ作るのか（必然性）</h2>
+<ul>
+<li>検査の計算・条文照合は<b>毎回同じ手順の繰り返し</b>。手計算は時間もミスも増える。</li>
+<li>自分の業務にぴったりの市販ソフトはまず無い。<b>無いなら自分で作る</b>。</li>
+<li>プログラミング未経験でも、「やりたいこと」を日本語で伝えればAIが書く。必要なのは<b>規程の理解と検算する目</b>。</li>
+<li>作る過程で条文の理解が深まる。式を言葉にできない人は、ツールも作れない。</li>
+</ul>
+</section>
+
+<section class="card">
+<div class="num">02</div><h2>全体の流れ</h2>
+<svg viewBox="0 0 480 330" role="img" aria-label="作成の流れ図">
+<defs><marker id="a" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" style="fill:var(--sub)"/></marker></defs>
+<rect class="b" x="10" y="10" width="200" height="44" rx="8"/><text x="110" y="37" text-anchor="middle" font-size="13">① 困りごとを言葉にする</text>
+<rect class="b" x="270" y="10" width="200" height="44" rx="8"/><text x="370" y="37" text-anchor="middle" font-size="13">② 根拠・式をAIに渡す</text>
+<rect class="b" x="270" y="100" width="200" height="44" rx="8"/><text x="370" y="127" text-anchor="middle" font-size="13">③ index.html を作成</text>
+<rect class="b2" x="10" y="100" width="200" height="44" rx="8"/><text x="110" y="127" text-anchor="middle" font-size="13">④ 動作確認・検算</text>
+<rect class="b" x="10" y="190" width="200" height="44" rx="8"/><text x="110" y="217" text-anchor="middle" font-size="13">⑤ GitHubへアップ</text>
+<rect class="b" x="270" y="190" width="200" height="44" rx="8"/><text x="370" y="217" text-anchor="middle" font-size="13">⑥ Pagesで公開（URL）</text>
+<rect class="b2" x="140" y="275" width="200" height="44" rx="8"/><text x="240" y="302" text-anchor="middle" font-size="13">現場で使う・直す</text>
+<path class="ar" d="M210 32H270" marker-end="url(#a)"/>
+<path class="ar" d="M370 54V100" marker-end="url(#a)"/>
+<path class="ar" d="M270 122H210" marker-end="url(#a)"/>
+<path class="ar" d="M110 144V190" marker-end="url(#a)"/>
+<path class="ar" d="M210 212H270" marker-end="url(#a)"/>
+<path class="ar" d="M370 234V255H300V275" marker-end="url(#a)"/>
+<path class="ar" d="M140 297H60V150" stroke-dasharray="4 3" marker-end="url(#a)"/>
+<text class="s" x="22" y="262">修正を依頼 → ③へ戻る</text>
+</svg>
+<p class="lead">一度で完成させない。③〜④を何度も回して育てるのがコツ。</p>
+</section>
+
+<section class="card">
+<div class="num">03</div><h2>手順と具体的作業</h2>
+
+<p><b>STEP 1　困りごとを一文にする</b><br>例：「船型区分ごとの主機適正出力を、毎回表を引いて手計算している。」</p>
+
+<p><b>STEP 2　根拠と式をAIに渡す</b><br>条文・附属書の該当ページ（写真やPDF）、式、変数の意味、判定の分岐を渡す。ここが品質の9割。</p>
+<pre>【依頼例】
+小型船舶検査の「主機適正出力」を計算する
+スマホ向けの単一HTMLを作ってください。
+・入力：船型区分、L、B、D ほか（添付の表参照）
+・出力：適正出力と判定
+・式と条件は添付の附属書のとおり。
+ 解釈が分かれる箇所は勝手に決めず質問すること
+・外部ライブラリ不使用、index.html 1ファイル</pre>
+
+<p><b>STEP 3　index.html を受け取る</b><br>AIが返したコードを「index.html」という名前で保存する（メモ帳でよい。文字コードはUTF-8）。</p>
+
+<p><b>STEP 4　ブラウザで開いて検算</b><br>保存したファイルをダブルクリック。過去に自分で計算した船の数値を入れ、結果が一致するか確認する。境界値（ちょうど上限・下限）も必ず試す。</p>
+
+<p><b>STEP 5　GitHubにアップ</b></p>
+<ol>
+<li>GitHubにログイン →「New repository」</li>
+<li>Repository name：<code>boat-simulator-main</code>、Public を選び「Create」</li>
+<li>「uploading an existing file」→ <code>index.html</code> をドラッグ →「Commit changes」</li>
+</ol>
+
+<p><b>STEP 6　Pagesで公開</b></p>
+<svg viewBox="0 0 480 230" role="img" aria-label="GitHub Pages設定画面の図">
+<rect class="b" x="6" y="6" width="468" height="218" rx="10"/>
+<text x="20" y="30" font-size="12" class="s">boat-simulator-main ／ Settings ／ Pages</text>
+<line x1="6" y1="40" x2="474" y2="40" stroke="var(--bd)"/>
+<text x="20" y="66" font-size="13">Build and deployment</text>
+<text x="20" y="92" font-size="12" class="s">Source</text><rect class="b2" x="20" y="98" width="190" height="26" rx="5"/><text x="30" y="116" font-size="12">Deploy from a branch</text>
+<text x="20" y="146" font-size="12" class="s">Branch</text><rect class="b2" x="20" y="152" width="80" height="26" rx="5"/><text x="30" y="170" font-size="12">main</text>
+<rect class="b2" x="110" y="152" width="100" height="26" rx="5"/><text x="120" y="170" font-size="12">/ (root)</text>
+<rect x="230" y="152" width="60" height="26" rx="5" style="fill:var(--ac)"/><text x="260" y="170" text-anchor="middle" font-size="12" style="fill:#04121f">Save</text>
+<text x="20" y="206" font-size="12" class="s">数分後に公開URLが表示される</text>
+<text x="230" y="116" font-size="11" class="s">← ① Sourceを選ぶ</text>
+</svg>
+<ol>
+<li>リポジトリの <b>Settings → Pages</b> を開く</li>
+<li>Source：<b>Deploy from a branch</b>、Branch：<b>main ／ (root)</b> →「Save」</li>
+<li>1〜数分待つと、次の形のURLで公開される</li>
+</ol>
+<pre>https://（アカウント名）.github.io/boat-simulator-main/</pre>
+<div class="note">index.html という名前にするのは、URLだけで開く「入口ページ」と認識されるため。</div>
+</section>
+
+<section class="card">
+<div class="num">04</div><h2>index.html の作り（要領）</h2>
+<svg viewBox="0 0 480 250" role="img" aria-label="index.htmlの構造図">
+<rect class="b" x="10" y="8" width="460" height="234" rx="10"/>
+<text x="24" y="30" font-size="13">index.html（1ファイルで完結）</text>
+<rect class="b2" x="26" y="42" width="428" height="48" rx="7"/><text x="40" y="62" font-size="13">① &lt;head&gt;／&lt;style&gt;　見た目</text><text class="s" x="40" y="80" font-size="11">色・文字・ボタンの形。viewport指定でスマホ対応</text>
+<rect class="b2" x="26" y="100" width="428" height="62" rx="7"/><text x="40" y="120" font-size="13">② &lt;body&gt;　入力欄と結果の表示欄</text><text class="s" x="40" y="138" font-size="11">船型区分のラジオボタン、L・B・Dの数値欄、結果カード</text><text class="s" x="40" y="153" font-size="11">各部品に id を付ける（例：id="L"）</text>
+<rect class="b2" x="26" y="172" width="428" height="58" rx="7"/><text x="40" y="192" font-size="13">③ &lt;script&gt;　計算と判定</text><text class="s" x="40" y="210" font-size="11">idで入力値を取り、式で計算し、結果欄へ書き出す</text><text class="s" x="40" y="224" font-size="11">条文の式はここ。修正の多くは③に集中する</text>
+</svg>
+<ul>
+<li><b>見た目・入力・計算の3層</b>で考える。直したい箇所が①②③のどれか言えれば、AIへの指示が的確になる。</li>
+<li>修正依頼は具体的に。「数値を直して」ではなく「Dが2.5mを超える場合は係数を0.9にする」のように、条件と値を示す。</li>
+<li>仕様を変えたら、必ず元のテスト値で再検算する。</li>
+</ul>
+</section>
+
+<section class="card">
+<div class="num">05</div><h2>守ること</h2>
+<ul>
+<li>AIは自信満々に間違える。<b>最終判断は条文と自分の目</b>。ツールは計算補助であり、検査の判定そのものではない。</li>
+<li>公開リポジトリは誰でも見られる。<b>申請者の個人情報・内部資料・未公開の通達</b>は載せない。</li>
+<li>根拠条文・改正時点をページに明記し、改正があれば直す。</li>
+<li>職員専用の道具は、完成した index.html を <b>gate_hash.html で暗号化</b>してからアップする。パスフレーズを知る職員だけが開ける（中身は暗号文なので、公開リポジトリでも読めない）。</li>
+</ul>
+</section>
+
+<section class="card">
+<div class="num">06</div><h2>最初の一歩</h2>
+<p>① 今週いちばん面倒だった計算を一文にする　② 根拠ページを撮影する　③ AIに「単一HTMLで作って」と頼む。最初の1本が動けば、2本目は半分の時間で作れる。</p>
+</section>
+</main>
+</body>
+</html>
